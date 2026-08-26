@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario - Test de Dones</title>
+    <style>
+      :root {
+        --radius: 8px;
+        --green: #198754;
+        --green-dark: #146c43;
+        --gray-text: #495057;
+        --red: #c62828;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 15px;
+        color: #212529;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100dvh;
+      }
+
+      .card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 700px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-top: 0;
+        color: var(--green);
+        font-size: 1.3rem;
+      }
+
+      .info-usuario {
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--gray-text);
+        margin-bottom: 1rem;
+      }
+
+      .seccion-preguntas {
+        max-height: 450px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        background: #fafafa;
+      }
+
+      .pregunta-item {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .pregunta-texto {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .opciones-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.85rem;
+      }
+
+      .opciones-grid label {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .botones-navegacion {
+        display: flex;
+        gap: 10px;
+      }
+
+      button.submit {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: var(--radius);
+        background-color: var(--green);
+        color: white;
+        font-weight: bold;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      button.submit:hover:not(:disabled) {
+        background-color: var(--green-dark);
+      }
+
+      button.submit:disabled {
+        background-color: #a7d7c0;
+        cursor: not-allowed;
+      }
+
+      #mensajeError {
+        color: var(--red);
+        font-size: 0.85rem;
+        text-align: center;
+        margin-bottom: 10px;
+        font-weight: 600;
+        min-height: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2 id="tituloBloque">Cargando Test...</h2>
+      <p class="info-usuario" id="infoUsuario">Verificando datos...</p>
+
+      <div id="mensajeError"></div>
+
+      <div class="seccion-preguntas" id="contenedorPreguntas">
+        <!-- Las preguntas se cargarán aquí dinámicamente -->
+      </div>
+
+      <div class="botones-navegacion">
+        <button type="button" class="submit" id="btnAnterior" onclick="cambiarPagina(-1)" style="display:none;">Anterior</button>
+        <button type="button" class="submit" id="btnSiguiente" onclick="cambiarPagina(1)">Siguiente</button>
+      </div>
+    </div>
+
+    <script>
+      let usuarioGlobal = "";
+      let bloqueGlobal = 1;
+      let paginaActual = 0; // De 0 a 5 (6 páginas de 30 preguntas = 180)
+      
+      // Arreglo completo de respuestas para las 180 preguntas
+      let respuestasUsuario = new Array(180).fill(null);
+
+      // LISTA DE PREGUNTAS DEL BLOQUE 1 (Aquí puedes agregar o reemplazar con tus 180 preguntas exactas)
+      const preguntasBloque1 = [
+        "1. Disfruto explicando la verdad bíblica a otros de manera clara.",
+        "2. Siento una carga profunda por las almas perdidas y testifico de Cristo con facilidad.",
+        "3. Me gusta proveer recursos económicos o materiales para la obra del Señor con alegría.",
+        // ... (Aquí irían el resto de las preguntas hasta la 180)
+      ];
+
+      // Rellenamos el resto de forma automática si faltan texto de ejemplo para llegar a 180
+      for (let i = preguntasBloque1.length; i < 180; i++) {
+        preguntasBloque1.push((i + 1) + ". Me identifico con este enunciado de servicio y ministerio en la iglesia.");
+      }
+
+      // Opciones de respuesta y su valor en puntos
+      const opciones = [
+        { texto: "Muchísima", valor: 11 },
+        { texto: "Mucha", valor: 9 },
+        { texto: "Cierta", valor: 4 },
+        { texto: "Poca", valor: 2 },
+        { texto: "Ninguna", valor: 0 }
+      ];
+
+      function inicializarTest(usuario, bloque) {
+        usuarioGlobal = usuario;
+        bloqueGlobal = bloque;
+        document.getElementById('infoUsuario').innerText = "Usuario: " + usuario + " | Bloque " + bloque;
+        document.getElementById('tituloBloque').innerText = "Autoevaluación - Parte " + (paginaActual + 1) + " de 6";
+        renderizarPagina();
+      }
+
+      function renderizarPagina() {
+        const contenedor = document.getElementById('contenedorPreguntas');
+        contenedor.innerHTML = "";
+        
+        let inicio = paginaActual * 30;
+        let fin = inicio + 30;
+
+        for (let i = inicio; i < fin; i++) {
+          let div = document.createElement('div');
+          div.className = "pregunta-item";
+
+          let htmlOpciones = "";
+          opciones.forEach(op => {
+            let checked = (respuestasUsuario[i] === op.valor) ? "checked" : "";
+            htmlOpciones += `
+              <label>
+                <input type="radio" name="p_${i}" value="${op.valor}" ${checked} onclick="guardarRespuestaTemporal(${i}, ${op.valor})">
+                ${op.texto} (${op.valor})
+              </label>
+            `;
+          });
+
+          div.innerHTML = `
+            <div class="pregunta-texto">${preguntasBloque1[i]}</div>
+            <div class="opciones-grid">${htmlOpciones}</div>
+          `;
+          contenedor.appendChild(div);
+        }
+
+        // Control de botones
+        document.getElementById('btnAnterior').style.display = (paginaActual > 0) ? "block" : "none";
+        let btnSig = document.getElementById('btnSiguiente');
+        if (paginaActual === 5) {
+          btnSig.innerText = "Guardar y Enviar Bloque";
+        } else {
+          btnSig.innerText = "Siguiente";
+        }
+        
+        contenedor.scrollTop = 0;
+      }
+
+      function guardarRespuestaTemporal(indice, valor) {
+        respuestasUsuario[indice] = valor;
+        document.getElementById('mensajeError').innerText = "";
+      }
+
+      function cambiarPagina(direccion) {
+        let inicio = paginaActual * 30;
+        let fin = inicio + 30;
+
+        // Validar que las 30 preguntas de la página actual estén respondidas antes de avanzar
+        if (direccion === 1) {
+          for (let i = inicio; i < fin; i++) {
+            if (respuestasUsuario[i] === null) {
+              document.getElementById('mensajeError').innerText = "Por favor responde todas las preguntas de esta página antes de continuar.";
+              return;
+            }
+          }
+        }
+
+        paginaActual += direccion;
+
+        if (paginaActual > 5) {
+          // Llegamos al final, enviamos todo al servidor
+          enviarBloqueCompleto();
+        } else {
+          document.getElementById('tituloBloque').innerText = "Autoevaluación - Parte " + (paginaActual + 1) + " de 6";
+          renderizarPagina();
+        }
+      }
+
+      function enviarBloqueCompleto() {
+        document.getElementById('btnSiguiente').disabled = true;
+        document.getElementById('btnSiguiente').innerText = "Guardando respuestas...";
+        document.getElementById('mensajeError').innerText = "";
+
+        google.script.run
+          .withSuccessHandler(function(res) {
+            alert(res.mensaje);
+            location.reload();
+          })
+          .withFailureHandler(function(error) {
+            document.getElementById('btnSiguiente').disabled = false;
+            document.getElementById('btnSiguiente').innerText = "Guardar y Enviar Bloque";
+            document.getElementById('mensajeError').innerText = "Error al guardar en el servidor. Intenta de nuevo.";
+          })
+          .guardarRespuestasBloque(usuarioGlobal, bloqueGlobal, respuestasUsuario);
+      }
+    </script>
+  </body>
+</html>
