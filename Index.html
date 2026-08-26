@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Dones Espirituales</title>
+    <style>
+      :root {
+        --radius: 8px;
+        --green: #198754;      /* verde con contraste AA sobre blanco */
+        --green-dark: #146c43; /* hover / active */
+        --gray-text: #495057;
+        --red: #c62828;
+        --focus-ring: 0 0 0 3px rgba(25, 135, 84, 0.35);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100dvh;
+        background-color: #f4f4f9;
+        margin: 0;
+        color: #212529;
+      }
+
+      .card {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        width: 90%;
+        max-width: 450px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.4rem;
+        color: var(--green);
+      }
+
+      .field {
+        margin-bottom: 1rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--gray-text);
+        margin-bottom: 4px;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: var(--radius);
+        font-size: 1rem;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--green);
+        box-shadow: var(--focus-ring);
+      }
+
+      .cedula-wrap {
+        position: relative;
+      }
+
+      .cedula-wrap input {
+        padding-right: 44px;
+      }
+
+      .toggle-visibility {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto;
+        padding: 6px 8px;
+        margin: 0;
+        border: none;
+        background: transparent;
+        color: var(--gray-text);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      .toggle-visibility:hover {
+        background: #f1f1f1;
+      }
+
+      button.submit {
+        width: 100%;
+        padding: 12px;
+        margin-top: 8px;
+        border: none;
+        border-radius: var(--radius);
+        background-color: var(--green);
+        color: white;
+        font-weight: bold;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      button.submit:hover:not(:disabled) {
+        background-color: var(--green-dark);
+      }
+
+      button.submit:disabled {
+        background-color: #a7d7c0;
+        cursor: not-allowed;
+      }
+
+      #mensaje {
+        min-height: 1.2em;
+        text-align: center;
+        font-size: 14px;
+        margin: 12px 0 0;
+      }
+
+      #mensaje.info { color: var(--gray-text); }
+      #mensaje.error { color: var(--red); font-weight: 600; }
+      #mensaje.exito { color: var(--green-dark); font-weight: 600; }
+
+      /* Estilos para la sección de preguntas que se mostrará al entrar */
+      .seccion-preguntas {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        background: #fafafa;
+      }
+      
+      .pregunta-item {
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .pregunta-texto {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .opciones-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.85rem;
+      }
+
+      .opciones-grid label {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <!-- TARJETA DE LOGIN -->
+    <div class="card" id="loginCard">
+      <h2>Ingreso al Test</h2>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="usuario">Usuario</label>
+          <input type="text" id="usuario" name="usuario" autocomplete="username" required>
+        </div>
+
+        <div class="field">
+          <label for="cedula">Cédula</label>
+          <div class="cedula-wrap">
+            <input type="password" id="cedula" name="cedula" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required>
+            <button type="button" class="toggle-visibility" id="toggleCedula" aria-pressed="false">Mostrar</button>
+          </div>
+        </div>
+
+        <button type="submit" class="submit" id="btnEntrar">Entrar</button>
+        <p id="mensaje" class="info" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <!-- TARJETA DEL TEST (OCULTA HASTA INICIAR SESIÓN) -->
+    <div class="card" id="vistaTest" style="display: none; max-width: 650px;">
+      <h2 id="tituloBloque">Cargando Test...</h2>
+      <p id="infoUsuario" style="text-align: center; font-size: 0.85rem; color: var(--gray-text); margin-bottom: 1rem;"></p>
+      
+      <div id="mensajeErrorTest" style="color: var(--red); font-size: 0.85rem; text-align: center; margin-bottom: 10px; font-weight: 600;"></div>
+
+      <div class="seccion-preguntas" id="contenedorPreguntas">
+        <!-- Las preguntas se cargarán aquí -->
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="submit" id="btnAnterior" onclick="cambiarPagina(-1)" style="display:none;">Anterior</button>
+        <button type="button" class="submit" id="btnSiguiente" onclick="cambiarPagina(1)">Siguiente</button>
+      </div>
+    </div>
+
+    <script>
+      let usuarioActual = "";
+      let bloqueActual = 1;
+      let paginaActual = 0;
+      let respuestasUsuario = new Array(180).fill(null);
+
+      // Preguntas de ejemplo (puedes completarlas hasta 180)
+      const preguntasBloque1 = [
+        "1. Disfruto explicando la verdad bíblica a otros de manera clara.",
+        "2. Siento una carga profunda por las almas perdidas y testifico de Cristo con facilidad.",
+        "3. Me gusta proveer recursos económicos o materiales para la obra del Señor con alegría."
+      ];
+      for (let i = preguntasBloque1.length; i < 180; i++) {
+        preguntasBloque1.push((i + 1) + ". Me identifico con este enunciado de servicio en el ministerio.");
+      }
+
+      const opciones = [
+        { texto: "Muchísima", valor: 11 },
+        { texto: "Mucha", valor: 9 },
+        { texto: "Cierta", valor: 4 },
+        { texto: "Poca", valor: 2 },
+        { texto: "Ninguna", valor: 0 }
+      ];
+
+      const form = document.getElementById('loginForm');
+      const mensaje = document.getElementById('mensaje');
+      const btnEntrar = document.getElementById('btnEntrar');
+      const cedulaInput = document.getElementById('cedula');
+      const toggleCedula = document.getElementById('toggleCedula');
+
+      function setMensaje(texto, tipo) {
+        mensaje.textContent = texto;
+        mensaje.className = tipo;
+      }
+
+      toggleCedula.addEventListener('click', () => {
+        const oculto = cedulaInput.type === 'password';
+        cedulaInput.type = oculto ? 'text' : 'password';
+        toggleCedula.textContent = oculto ? 'Ocultar' : 'Mostrar';
+        toggleCedula.setAttribute('aria-pressed', String(oculto));
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        intentarLogin();
+      });
+
+      function intentarLogin() {
+        const usuario = document.getElementById('usuario').value.trim();
+        const cedula = cedulaInput.value.trim();
+
+        if (!usuario || !cedula) {
+          setMensaje('Llena ambos campos.', 'error');
+          return;
+        }
+
+        btnEntrar.disabled = true;
+        setMensaje('Verificando credenciales...', 'info');
+
+        // Llamada directa y limpia al servidor sin dependencias externas de IP
+        google.script.run
+          .withSuccessHandler(procesarRespuesta)
+          .withFailureHandler(procesarError)
+          .iniciarSesion(usuario, cedula, "");
+      }
+
+      function procesarRespuesta(respuesta) {
+        if (respuesta.exito) {
+          usuarioActual = document.getElementById('usuario').value.trim();
+          bloqueActual = respuesta.bloque || 1;
+
+          setMensaje('¡Acceso concedido!', 'exito');
+
+          setTimeout(() => {
+            document.getElementById('loginCard').style.display = 'none';
+            document.getElementById('vistaTest').style.display = 'block';
+            document.getElementById('infoUsuario').innerText = "Usuario: " + usuarioActual + " | Bloque " + bloqueActual;
+            renderizarPagina();
+          }, 800);
+
+        } else {
+          btnEntrar.disabled = false;
+          setMensaje(respuesta.mensaje, 'error');
+        }
+      }
+
+      function procesarError(error) {
+        btnEntrar.disabled = false;
+        setMensaje('Ocurrió un error al verificar. Intenta de nuevo.', 'error');
+      }
+
+      function renderizarPagina() {
+        const contenedor = document.getElementById('contenedorPreguntas');
+        contenedor.innerHTML = "";
+        
+        let inicio = paginaActual * 30;
+        let fin = inicio + 30;
+
+        document.getElementById('tituloBloque').innerText = "Autoevaluación - Parte " + (paginaActual + 1) + " de 6";
+
+        for (let i = inicio; i < fin; i++) {
+          let div = document.createElement('div');
+          div.className = "pregunta-item";
+
+          let htmlOpciones = "";
+          opciones.forEach(op => {
+            let checked = (respuestasUsuario[i] === op.valor) ? "checked" : "";
+            htmlOpciones += `
+              <label>
+                <input type="radio" name="p_${i}" value="${op.valor}" ${checked} onclick="guardarRespuesta(${i}, ${op.valor})">
+                ${op.texto} (${op.valor})
+              </label>
+            `;
+          });
+
+          div.innerHTML = `
+            <div class="pregunta-texto">${preguntasBloque1[i]}</div>
+            <div class="opciones-grid">${htmlOpciones}</div>
+          `;
+          contenedor.appendChild(div);
+        }
+
+        document.getElementById('btnAnterior').style.display = (paginaActual > 0) ? "block" : "none";
+        let btnSig = document.getElementById('btnSiguiente');
+        btnSig.innerText = (paginaActual === 5) ? "Guardar y Enviar Bloque" : "Siguiente";
+        contenedor.scrollTop = 0;
+      }
+
+      function guardarRespuesta(indice, valor) {
+        respuestasUsuario[indice] = valor;
+        document.getElementById('mensajeErrorTest').innerText = "";
+      }
+
+      function cambiarPagina(direccion) {
+        let inicio = paginaActual * 30;
+        let fin = inicio + 30;
+
+        if (direccion === 1) {
+          for (let i = inicio; i < fin; i++) {
+            if (respuestasUsuario[i] === null) {
+              document.getElementById('mensajeErrorTest').innerText = "Responde todas las preguntas de esta página antes de continuar.";
+              return;
+            }
+          }
+        }
+
+        paginaActual += direccion;
+
+        if (paginaActual > 5) {
+          enviarBloqueCompleto();
+        } else {
+          renderizarPagina();
+        }
+      }
+
+      function enviarBloqueCompleto() {
+        let btnSig = document.getElementById('btnSiguiente');
+        btnSig.disabled = true;
+        btnSig.innerText = "Guardando respuestas...";
+
+        google.script.run
+          .withSuccessHandler(function(res) {
+            alert(res.mensaje);
+            location.reload();
+          })
+          .withFailureHandler(function(error) {
+            btnSig.disabled = false;
+            btnSig.innerText = "Guardar y Enviar Bloque";
+            document.getElementById('mensajeErrorTest').innerText = "Error al guardar en el servidor.";
+          })
+          .guardarRespuestasBloque(usuarioActual, bloqueActual, respuestasUsuario);
+      }
+    </script>
+  </body>
+</html>
