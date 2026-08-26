@@ -26,6 +26,7 @@
         background-color: #f4f4f9;
         margin: 0;
         color: #212529;
+        padding: 15px;
       }
 
       .card {
@@ -134,7 +135,7 @@
       #mensaje.error { color: var(--red); font-weight: 600; }
       #mensaje.exito { color: var(--green-dark); font-weight: 600; }
 
-      /* Estilos para la sección de preguntas que se mostrará al entrar */
+      /* Estilos para la sección de preguntas (vista test) */
       .seccion-preguntas {
         max-height: 400px;
         overflow-y: auto;
@@ -170,6 +171,35 @@
         align-items: center;
         gap: 4px;
       }
+
+      .botones-navegacion {
+        display: flex;
+        gap: 10px;
+      }
+
+      .botones-navegacion button {
+        flex: 1;
+      }
+
+      #vistaTest {
+        max-width: 700px;
+      }
+
+      .info-usuario {
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--gray-text);
+        margin-bottom: 1rem;
+      }
+
+      #mensajeErrorTest {
+        color: var(--red);
+        font-size: 0.85rem;
+        text-align: center;
+        margin-bottom: 10px;
+        font-weight: 600;
+        min-height: 1.2em;
+      }
     </style>
   </head>
   <body>
@@ -198,38 +228,43 @@
     </div>
 
     <!-- TARJETA DEL TEST (OCULTA HASTA INICIAR SESIÓN) -->
-    <div class="card" id="vistaTest" style="display: none; max-width: 650px;">
+    <div class="card" id="vistaTest" style="display: none;">
       <h2 id="tituloBloque">Cargando Test...</h2>
-      <p id="infoUsuario" style="text-align: center; font-size: 0.85rem; color: var(--gray-text); margin-bottom: 1rem;"></p>
+      <p class="info-usuario" id="infoUsuario"></p>
       
-      <div id="mensajeErrorTest" style="color: var(--red); font-size: 0.85rem; text-align: center; margin-bottom: 10px; font-weight: 600;"></div>
+      <div id="mensajeErrorTest"></div>
 
       <div class="seccion-preguntas" id="contenedorPreguntas">
         <!-- Las preguntas se cargarán aquí -->
       </div>
 
-      <div style="display: flex; gap: 10px;">
+      <div class="botones-navegacion">
         <button type="button" class="submit" id="btnAnterior" onclick="cambiarPagina(-1)" style="display:none;">Anterior</button>
         <button type="button" class="submit" id="btnSiguiente" onclick="cambiarPagina(1)">Siguiente</button>
       </div>
     </div>
 
     <script>
+      // ========== VARIABLES GLOBALES ==========
       let usuarioActual = "";
       let bloqueActual = 1;
-      let paginaActual = 0;
+      let paginaActual = 0;          // 0..5 (6 páginas de 30 preguntas)
       let respuestasUsuario = new Array(180).fill(null);
 
-      // Preguntas de ejemplo (puedes completarlas hasta 180)
+      // ========== PREGUNTAS (BLOQUE 1) ==========
+      // Puedes reemplazar estas 180 preguntas con las reales.
+      // Aquí se incluyen 3 de ejemplo y el resto se rellena con texto genérico.
       const preguntasBloque1 = [
         "1. Disfruto explicando la verdad bíblica a otros de manera clara.",
         "2. Siento una carga profunda por las almas perdidas y testifico de Cristo con facilidad.",
         "3. Me gusta proveer recursos económicos o materiales para la obra del Señor con alegría."
       ];
+      // Completar hasta 180 preguntas (si faltan)
       for (let i = preguntasBloque1.length; i < 180; i++) {
         preguntasBloque1.push((i + 1) + ". Me identifico con este enunciado de servicio en el ministerio.");
       }
 
+      // ========== OPCIONES DE RESPUESTA ==========
       const opciones = [
         { texto: "Muchísima", valor: 11 },
         { texto: "Mucha", valor: 9 },
@@ -238,12 +273,14 @@
         { texto: "Ninguna", valor: 0 }
       ];
 
+      // ========== REFERENCIAS DOM ==========
       const form = document.getElementById('loginForm');
       const mensaje = document.getElementById('mensaje');
       const btnEntrar = document.getElementById('btnEntrar');
       const cedulaInput = document.getElementById('cedula');
       const toggleCedula = document.getElementById('toggleCedula');
 
+      // ========== FUNCIONES DE LOGIN ==========
       function setMensaje(texto, tipo) {
         mensaje.textContent = texto;
         mensaje.className = tipo;
@@ -273,7 +310,7 @@
         btnEntrar.disabled = true;
         setMensaje('Verificando credenciales...', 'info');
 
-        // Llamada directa y limpia al servidor sin dependencias externas de IP
+        // Llamada al servidor (Google Apps Script)
         google.script.run
           .withSuccessHandler(procesarRespuesta)
           .withFailureHandler(procesarError)
@@ -290,8 +327,8 @@
           setTimeout(() => {
             document.getElementById('loginCard').style.display = 'none';
             document.getElementById('vistaTest').style.display = 'block';
-            document.getElementById('infoUsuario').innerText = "Usuario: " + usuarioActual + " | Bloque " + bloqueActual;
-            renderizarPagina();
+            // Inicializar el test con los datos del usuario
+            inicializarTest(usuarioActual, bloqueActual);
           }, 800);
 
         } else {
@@ -303,6 +340,15 @@
       function procesarError(error) {
         btnEntrar.disabled = false;
         setMensaje('Ocurrió un error al verificar. Intenta de nuevo.', 'error');
+      }
+
+      // ========== FUNCIONES DEL TEST (tomadas de Test.html) ==========
+      function inicializarTest(usuario, bloque) {
+        usuarioActual = usuario;
+        bloqueActual = bloque;
+        document.getElementById('infoUsuario').innerText = "Usuario: " + usuario + " | Bloque " + bloque;
+        document.getElementById('tituloBloque').innerText = "Autoevaluación - Parte " + (paginaActual + 1) + " de 6";
+        renderizarPagina();
       }
 
       function renderizarPagina() {
@@ -336,9 +382,15 @@
           contenedor.appendChild(div);
         }
 
+        // Control de botones
         document.getElementById('btnAnterior').style.display = (paginaActual > 0) ? "block" : "none";
         let btnSig = document.getElementById('btnSiguiente');
-        btnSig.innerText = (paginaActual === 5) ? "Guardar y Enviar Bloque" : "Siguiente";
+        if (paginaActual === 5) {
+          btnSig.innerText = "Guardar y Enviar Bloque";
+        } else {
+          btnSig.innerText = "Siguiente";
+        }
+        btnSig.disabled = false;
         contenedor.scrollTop = 0;
       }
 
@@ -351,6 +403,7 @@
         let inicio = paginaActual * 30;
         let fin = inicio + 30;
 
+        // Validar que todas las preguntas de la página actual estén respondidas al avanzar
         if (direccion === 1) {
           for (let i = inicio; i < fin; i++) {
             if (respuestasUsuario[i] === null) {
@@ -363,6 +416,7 @@
         paginaActual += direccion;
 
         if (paginaActual > 5) {
+          // Llegamos al final → enviar bloque
           enviarBloqueCompleto();
         } else {
           renderizarPagina();
@@ -370,9 +424,10 @@
       }
 
       function enviarBloqueCompleto() {
-        let btnSig = document.getElementById('btnSiguiente');
+        const btnSig = document.getElementById('btnSiguiente');
         btnSig.disabled = true;
         btnSig.innerText = "Guardando respuestas...";
+        document.getElementById('mensajeErrorTest').innerText = "";
 
         google.script.run
           .withSuccessHandler(function(res) {
@@ -382,7 +437,7 @@
           .withFailureHandler(function(error) {
             btnSig.disabled = false;
             btnSig.innerText = "Guardar y Enviar Bloque";
-            document.getElementById('mensajeErrorTest').innerText = "Error al guardar en el servidor.";
+            document.getElementById('mensajeErrorTest').innerText = "Error al guardar en el servidor. Intenta de nuevo.";
           })
           .guardarRespuestasBloque(usuarioActual, bloqueActual, respuestasUsuario);
       }
