@@ -274,8 +274,8 @@
     </div>
 
     <script>
-      // URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT (MODIFICAR AQUÍ)
-      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzSNMH7JVGHU-xGUXZ5tUGo8d_sdMbgdSQSOjc1A4p8Ng_GYXOJz4Hevj-H7ZEeWm1vFw/exec";
+      // URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT
+      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzt4B4vbMXyFu3GNyLnR-scqtjOXwWTiv8SIOQ3R3ovg3GME7nKZfem-9LHKdTZGXifIw/exec";
 
       let usuarioActual = "";
       let tipoTest = "principal"; 
@@ -453,7 +453,7 @@
         "168. Colaborar en un grupo de la iglesia, que se ocupe de orar intensa y continuadamente por otras personas.",
         "169. Interpretar públicamente lo que otros cristianos hablan en lenguas, al darme Dios una interpretación.",
         "170. Pasarme mucho tiempo recopilando ideas que ayuden a la iglesia de Jesucristo mantenerse sana y en crecimiento.",
-        "171. Tom la responsabilidad de dirigir a gran número de cristianos",
+        "171. Tomar la responsabilidad de dirigir a gran número de cristianos",
         "172. Arriesgar mi vida, si fuera necesario para el Reino de Dios.",
         "173. Cooperar en un servicio de la iglesia, que se dedique especialmente a los desheredados de la sociedad.",
         "174. Concentrarme en la oración por aquellos que, a la vista humana, tengan menos esperanza.",
@@ -576,59 +576,60 @@
           return;
         }
 
-        let ipCliente = localStorage.getItem('dispositivo_ip_token');
-        if (!ipCliente) {
-          ipCliente = 'IP_' + Math.random().toString(36).substring(2, 15) + "_" + Date.now();
-          localStorage.setItem('dispositivo_ip_token', ipCliente);
-        }
-
         btnEntrar.disabled = true;
-        mensaje.textContent = 'Verificando credenciales y restricciones de red...';
+        mensaje.textContent = 'Detectando IP real y verificando restricciones...';
         mensaje.className = 'info';
 
-        // PETICIÓN FETCH HACIA LA API DE GOOGLE APPS SCRIPT
-        fetch(WEB_APP_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            action: "validarLogin",
-            usuario: usuario,
-            cedula: cedula,
-            ipCliente: ipCliente
+        // 1. Detectar IP real pública en el cliente
+        fetch('https://api.ipify.org?format=json')
+          .then(response => response.json())
+          .then(dataIP => {
+            const ipRealCliente = dataIP.ip;
+
+            // 2. Enviar credenciales e IP real a Apps Script
+            return fetch(WEB_APP_URL, {
+              method: "POST",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body: JSON.stringify({
+                action: "validarLogin",
+                usuario: usuario,
+                cedula: cedula,
+                ipCliente: ipRealCliente
+              })
+            });
           })
-        })
-        .then(res => res.json())
-        .then(res => {
-          if (res.exito) {
-            usuarioActual = usuario;
-            tipoTest = res.tipo; 
-            
-            if (tipoTest === 'principal') {
-              respuestasUsuario = new Array(180).fill(null);
+          .then(res => res.json())
+          .then(res => {
+            if (res.exito) {
+              usuarioActual = usuario;
+              tipoTest = res.tipo; 
+              
+              if (tipoTest === 'principal') {
+                respuestasUsuario = new Array(180).fill(null);
+              } else {
+                respuestasUsuario = new Array(30).fill(null);
+              }
+
+              mensaje.textContent = '¡Acceso concedido!';
+              mensaje.className = 'exito';
+
+              setTimeout(() => {
+                document.getElementById('loginCard').style.display = 'none';
+                document.getElementById('vistaTest').style.display = 'block';
+                document.getElementById('infoUsuario').innerText = "Usuario: " + usuarioActual + " | Módulo: " + tipoTest.toUpperCase();
+                renderizarPagina();
+              }, 800);
             } else {
-              respuestasUsuario = new Array(30).fill(null);
+              btnEntrar.disabled = false;
+              mensaje.textContent = res.mensaje;
+              mensaje.className = 'error';
             }
-
-            mensaje.textContent = '¡Acceso concedido!';
-            mensaje.className = 'exito';
-
-            setTimeout(() => {
-              document.getElementById('loginCard').style.display = 'none';
-              document.getElementById('vistaTest').style.display = 'block';
-              document.getElementById('infoUsuario').innerText = "Usuario: " + usuarioActual + " | Módulo: " + tipoTest.toUpperCase();
-              renderizarPagina();
-            }, 800);
-          } else {
+          })
+          .catch(() => {
             btnEntrar.disabled = false;
-            mensaje.textContent = res.mensaje;
+            mensaje.textContent = 'Error de conexión con el servidor o internet.';
             mensaje.className = 'error';
-          }
-        })
-        .catch(() => {
-          btnEntrar.disabled = false;
-          mensaje.textContent = 'Error de conexión con el servidor.';
-          mensaje.className = 'error';
-        });
+          });
       });
 
       function renderizarPagina() {
@@ -726,7 +727,6 @@
         btnSig.disabled = true;
         btnSig.innerText = "Guardando...";
 
-        // PETICIÓN FETCH PARA GUARDAR RESPUESTAS EN LA API
         fetch(WEB_APP_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -769,6 +769,7 @@
         renderizarPagina();
       }
 
+      // Funciones de editar y borrar
       function borrarRespuestas() {
         if (confirm("¿Estás seguro de borrar tus respuestas?")) {
           respuestasUsuario = new Array(respuestasUsuario.length).fill(null);
