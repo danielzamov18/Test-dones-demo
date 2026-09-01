@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Dones Espirituales</title>
+    <style>
+      :root {
+        --radius: 8px;
+        --green: #198754;
+        --green-dark: #146c43;
+        --gray-text: #495057;
+        --red: #c62828;
+        --focus-ring: 0 0 0 3px rgba(25, 135, 84, 0.35);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100dvh;
+        background-color: #f4f4f9;
+        margin: 0;
+        color: #212529;
+      }
+
+      .card {
+        background: white;
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        width: 90%;
+        max-width: 450px;
+      }
+
+      .card.test-card {
+        max-width: 750px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.4rem;
+        color: var(--green);
+      }
+
+      .field {
+        margin-bottom: 1rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--gray-text);
+        margin-bottom: 4px;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: var(--radius);
+        font-size: 1rem;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--green);
+        box-shadow: var(--focus-ring);
+      }
+
+      .cedula-wrap {
+        position: relative;
+      }
+
+      .cedula-wrap input {
+        padding-right: 44px;
+      }
+
+      .toggle-visibility {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto;
+        padding: 6px 8px;
+        margin: 0;
+        border: none;
+        background: transparent;
+        color: var(--gray-text);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      .toggle-visibility:hover {
+        background: #f1f1f1;
+      }
+
+      button.submit {
+        width: 100%;
+        padding: 12px;
+        margin-top: 8px;
+        border: none;
+        border-radius: var(--radius);
+        background-color: var(--green);
+        color: white;
+        font-weight: bold;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      button.submit:hover:not(:disabled) {
+        background-color: var(--green-dark);
+      }
+
+      button.submit:disabled {
+        background-color: #a7d7c0;
+        cursor: not-allowed;
+      }
+
+      button.secondary { background-color: #6c757d; }
+      button.secondary:hover { background-color: #5a6268; }
+
+      button.danger { background-color: var(--red); }
+      button.danger:hover { background-color: #b71c1c; }
+
+      #mensaje {
+        min-height: 1.2em;
+        text-align: center;
+        font-size: 14px;
+        margin: 12px 0 0;
+      }
+
+      #mensaje.info { color: var(--gray-text); }
+      #mensaje.error { color: var(--red); font-weight: 600; }
+      #mensaje.exito { color: var(--green-dark); font-weight: 600; }
+
+      .seccion-preguntas {
+        max-height: 450px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        background: #fafafa;
+      }
+      
+      .pregunta-item {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .pregunta-texto {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        line-height: 1.4;
+      }
+
+      .opciones-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.85rem;
+      }
+
+      .opciones-grid label {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: white;
+        padding: 6px 10px;
+        border: 1px solid #ddd;
+        border-radius: var(--radius);
+        transition: background-color 0.2s, border-color 0.2s;
+        margin-bottom: 0;
+        font-weight: 500;
+      }
+
+      .opciones-grid label:hover {
+        background: #f1f8f5;
+        border-color: var(--green);
+      }
+
+      .opciones-grid input[type="radio"] {
+        width: auto;
+        margin: 0;
+        accent-color: var(--green);
+      }
+
+      .encabezado-instrucciones {
+        background: #e8f5e9;
+        padding: 15px;
+        border-radius: var(--radius);
+        margin-bottom: 15px;
+        border-left: 4px solid var(--green);
+      }
+      .encabezado-instrucciones h3 {
+        margin: 0 0 5px 0;
+        color: var(--green-dark);
+        font-size: 1.1rem;
+      }
+      .encabezado-instrucciones p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--gray-text);
+      }
+    </style>
+  </head>
+  <body>
+    
+    <!-- TARJETA DE LOGIN -->
+    <div class="card" id="loginCard">
+      <h2>Ingreso al Test</h2>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="usuario">Usuario</label>
+          <input type="text" id="usuario" name="usuario" autocomplete="username" required>
+        </div>
+
+        <div class="field">
+          <label for="cedula">Cédula</label>
+          <div class="cedula-wrap">
+            <input type="password" id="cedula" name="cedula" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required>
+            <button type="button" class="toggle-visibility" id="toggleCedula" aria-pressed="false">Mostrar</button>
+          </div>
+        </div>
+
+        <button type="submit" class="submit" id="btnEntrar">Entrar</button>
+        <p id="mensaje" class="info" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <!-- TARJETA DEL TEST -->
+    <div class="card test-card" id="vistaTest" style="display: none;">
+      <h2 id="tituloBloque">Autoevaluación</h2>
+      <p id="infoUsuario" style="text-align: center; font-size: 0.85rem; color: var(--gray-text); margin-bottom: 1rem;"></p>
+      
+      <div class="encabezado-instrucciones" id="cajaEncabezado">
+        <h3 id="tituloSeccion">Me produce Alegría...</h3>
+        <p id="subtituloSeccion">* Si en algunos de los campos que siguen no ha tenido ninguna experiencia, marque con una cruz la columna de la derecha.</p>
+      </div>
+
+      <div id="mensajeErrorTest" style="color: var(--red); font-size: 0.85rem; text-align: center; margin-bottom: 10px; font-weight: 600;"></div>
+
+      <div class="seccion-preguntas" id="contenedorPreguntas"></div>
+
+      <div style="display: flex; gap: 10px;" id="botonesNavegacion">
+        <button type="button" class="submit" id="btnAnterior" onclick="cambiarPagina(-1)" style="display:none;">Anterior</button>
+        <button type="button" class="submit" id="btnSiguiente" onclick="cambiarPagina(1)">Siguiente</button>
+      </div>
+
+      <!-- OPCIONES FINALES -->
+      <div id="panelFinal" style="display: none; text-align: center; margin-top: 15px;">
+        <p style="font-weight: bold; color: var(--green-dark); margin-bottom: 15px;">¡Test guardado correctamente!</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button type="button" class="submit secondary" onclick="editarRespuestas()">Editar</button>
+          <button type="button" class="submit danger" onclick="borrarRespuestas()">Borrar</button>
+          <button type="button" class="submit" onclick="finalizarListo()">Listo</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT (MODIFICAR AQUÍ)
+      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzSNMH7JVGHU-xGUXZ5tUGo8d_sdMbgdSQSOjc1A4p8Ng_GYXOJz4Hevj-H7ZEeWm1vFw/exec";
+
+      let usuarioActual = "";
+      let tipoTest = "principal"; 
+      let paginaActual = 0;
+      let respuestasUsuario = [];
+
+      const preguntasPrincipal = [
+        "1. Proyectar planes detallados, describiendo, paso a paso cómo se pueden alcanzar determinadas metas.",
+        "2. Adaptarme a la forma de vida de personas de otras culturas.",
+        "3. Vivir sin casarme y sin familia (los casados pongan cruz en la columna derecha)",
+        "4. Verificar declaraciones de otros cristianos, en cuanto al peligro de que puedan llevar a la iglesia por un mal camino",
+        "5. Hablar con no creyentes acerca de Jesús y de mi relación personal con el",
+        "6. De ser necesario, escuchar a una persona durante horas enteras, sin decir algo de mi mismo",
+        "7. Formular objetos que a otros pueden parecer inalcanzables, y esforzarme, consecuentemente, por lograrlos",
+        "8. Poner generosamente a disposición de la obra del reino de Dios, mi dinero y pertenencias",
+        "9. Intervenir para que seres humanos sean liberados de lazos satánicos",
+        "10. Orar con regularidad por la curación de enfermos",
+        "11. Trabajar en la preparación de medios que faciliten a las personas el aprendizaje, haciéndolo, en lo posible, interesante y sencillo",
+        "12. Orar en lenguas",
+        "13. Ayudar a personas y a grupos a analizar sus situaciones particulares y a buscar posibilidades de mejorarlas",
+        "14. Contentarme con un nivel de vida modesto",
+        "15. Reparar cosas y mantenerlas en buen estado",
+        "16. Trabajar en la retaguardia, apoyando en su servicio a creyentes que están más en la retaguardia.",
+        "17. Recibir visitas cariñosamente, auque lleguen por sorpresa y brindarles comida y alojamiento.",
+        "18. Pasar en oración una o más horas.",
+        "19. Desprender de lo que otro creyente dice en lenguas, aquello que Dios quiere transmitir.",
+        "20. Pasar mucho tiempo estudiando la literatura para conseguir más conocimientos.",
+        "21. Dirigir a las personas de manera que hayan todas asiduamente hacia un común objetivo.",
+        "22. Mostrar una actitud positiva hacia la vida, en medio del sufrimiento.",
+        "23. Ocuparme de seres humanos que están al margen de la sociedad.",
+        "24. Orar por cosas que van más allá de las leyes de la naturaleza.",
+        "25. Trabajar asiduamente para ayudar a otras iglesias a resolver sus problemas contribuyendo a encontrarles solución.",
+        "26. Ocuparme de la salud espiritual de otros creyentes y brindarles apoyo durante mucho tiempo.",
+        "27. Servir de portavoz, a través de quien Dios, en una situación concreta, da a su iglesia claras instrucciones.",
+        "28. Hacer en la iglesia trabajos pequeños, a primera vista insignificantes.",
+        "29. Trabajar asiduamente en desarrollar mis dotes musicales.",
+        "30. Expresar mis ideas, pensamientos y sensaciones por medios artísticos (teatro, pintura, gráficamente, canto.. Etc.)",
+        "31. Planear independientemente proyectos de la iglesia, organizarlos y buscar a la gente adecuada para su realización.",
+        "32. Establecer contactos con personas de otras culturas.",
+        "33. Ocuparme de descubrir si es la voluntad de Dios para mi quedarme soltero (casados pongan un X en la última columna)",
+        "34. Examinar las palabras de otros cristianos, para comprobar si están de acuerdo con la Biblia.",
+        "35. Entablar conversación con no creyentes sobre la fe en Jesús.",
+        "36. Poner mi persona a disposición de persona necesitadas, también fuera de mi círculo de amigos, para ayudarles.",
+        "37. Ver que, en la iglesia, la voz cantante la llevan personas de visión",
+        "38. Entrar en contacto con las personas y los proyectos idóneos, que requieren mi aportación financiera.",
+        "39. Ser utilizados por Dios, en la lucha contra los poderes demoníacos.",
+        "40. Orar con regularidad por la curación de enfermos",
+        "41. Servir como instrumento, a través del cual Dios obre curaciones sobrenaturales.",
+        "42. En mi oración a Dios, traspasar el umbral de lo racional, para adorarlo en nuevas lenguas.",
+        "43. Ayudar a personas y organizaciones a encontrar los verdaderos caminos para conseguir sus objetivos.",
+        "44. Reducir considerablemente mi nivel de vida material",
+        "45. Realizar con mis manos, trabajos prácticos para Dios.",
+        "46. Brindar mi apoyo a otros cristianos, poniendo mis dones a su servicio.",
+        "47. En mi hogar, ofrecer a personas desconocidas una atmósfera en la cual se sientan bien.",
+        "48. Dedicar mucho tiempo a la oración.",
+        "49. Ser utilizado para interpretar lo que otros cristianos hablan en lenguas, de manera de que todos lo entiendan.",
+        "50. Recopilar y valorar ideas que puedan ser importantes para la iglesia de Jesucristo.",
+        "51. Que se me pida realizar trabajos que requieran esfuerzo.",
+        "52. Ponerme en situaciones, en las cuales la fe se relaciona con el sacrificio personal.",
+        "53. Ocuparme de personas postergadas o rechazadas por la sociedad.",
+        "54. Tener la vivencia de que Dios me utiliza para obrar señales y milagros.",
+        "55. Trabajar para crear nuevas iglesias, ganando a si a otros que no se podían alcanzar de otra manera.",
+        "56. Hacer compañía a otros creyentes para ayudarles a crecer en la fe.",
+        "57. Mostrar a otros creyentes cual es la voluntad de Dios en una situación determinada.",
+        "58. Ser llamado cuando hay tareas a realizar en la iglesia.",
+        "59. Servir al Señor con la música.",
+        "60. Expresar mis sentimientos en forma creativa (teatro, pintura, alfarería, danza, etc.)",
+        "61. De desarrollar planes para que el trabajo de la iglesia se realice de manera más racional.",
+        "62. De que personas provenientes de otros niveles culturales se sientan atraídas por mi.",
+        "63. De que yo, como soltero tenga mayor capacidad de trabajar para el Señor. (Casados pongan X en la última columna)",
+        "64. De haber descubierto motivaciones erradas detrás de palabras de aspecto espiritual.",
+        "65. De que Dios me haya utilizado para conducir a otros a la fe en Jesucristo.",
+        "66. De que la vida de personas haya cambiado como consecuencia de mis amonestaciones.",
+        "67. De que otros me consideren un soñador por luchar por objetivos que ellos tildan de utópicos.",
+        "68. De que me haya sido posible ayudar a otras personas, dándoles sumas considerables de mi dinero.",
+        "69. De que por mi oración, otros hayan sido liberados de lazos demoníacos.",
+        "70. De que Dios haya sanado a enfermos del cuerpo o del alma, por los cuales yo haya estado orando.",
+        "71. De que otros cristianos me hayan corroborado mi capacidad de transmitirles mis conocimientos en forma excepcionalmente interesante",
+        "72. De haber orado a Dios en una lengua desconocida para mí.",
+        "73. De que otros me hayan consultado sobre las posibilidades de resolver algún problema difícil y que les haya podido ayudar.",
+        "74. De que haya conseguido mejorar mi contacto con los necesitados, por haberme decidido a vivir más modestamente.",
+        "75. De haber podido ayudar a otros con mi habilidad manual.",
+        "76. De que cristianos con cargos de responsabilidad pudieran servir más eficientemente, por mi cooperación en ciertas tareas.",
+        "77. De recibir en mi casa a mucha gente puesto que al parecer se sienten alli mejor que otras partes.",
+        "78. De que Dios haya actuado en forma clara y ostensible, cuando he estado orando por asuntos definidos.",
+        "79. De que mi interpretación de lo hablando en lenguas se haya ajustado a la situación.",
+        "80. De haber sido el primero en dar ideas nuevas, que posteriormente hayan sido útiles.",
+        "81. De haber podido motivar a otros creyente para que trabajen par conseguir objetivos determinados.",
+        "82. De que mi sufrimiento haya servido para fortalecer a otros.",
+        "83. De haber podido ayudar de manera práctica a seres en situaciones de necesidad.",
+        "84. De que Dios me haya utilizado como instrumento para obrar señales y milagros.",
+        "85. De que dirigentes de oras iglesias hayan aceptado mis consejos, llevándolos a la práctica.",
+        "86. De haber podido ayudar a otros creyentes a crecer en su fe, por mi asistencia personal, durante mucho tiempo.",
+        "87. De que otros cristianos me hayan expresado que aquello que yo les transmití, era un mensaje de Dios.",
+        "88. De ver antes que nadie lo que hay que hacer en la iglesia, y hacerlo yo mismo.",
+        "89. De que otras personas hayan escuchado con emoción cuando he usado mis dotes musicales.",
+        "90. De haber podido usar, para la honra de Dios, mis cualidades creativas (escribir, pintar, hacer teatro, etc)",
+        "91. Yo planifico diariamente mis actividades y dejo lo menos posible al azar.",
+        "92. Me agrada mucho aprender de la manera de vivir de otras culturas.",
+        "93. Me puedo identificar bien con las palabra de Pablo, de que, según su ejemplo, otros deberían quedarse solteros.",
+        "94. Me inquieta muchísimo que alguien diga algo que, aunque sea correcto, sus motivaciones no sean legítimas.",
+        "95. Es un gran problema para mi el que muchos cristianos verdaderos no hablen a otros de su fe.",
+        "96. Cuando otros me cuentan sus problemas, muestro mayor simpatía y compasión que otras personas.",
+        "97. Me es totalmente evidente que Dios cumple sus promesas, aunque todas las circunstancias estén en contra.",
+        "98. Me afecta muy personalmente cuando algo acerca de las necesidades financieras de otra personas.",
+        "99. Me deprime el que muchos creyentes no vivan conscientes de la existencia de demonios.",
+        "100. Me aflige más que otros cristianos que en muchas iglesias se ore tan poco por los enfermos.",
+        "101. Sufro al comprobar que tan pocos cristianos están en condiciones de transmitir su fe y conocimientos de manera interesante y precisa.",
+        "102. Me siento bien en grupos donde los creyentes oran en lenguas.",
+        "103. Considero importante que mi iglesia se haga asesorar en profundidad por especialistas experimentados.",
+        "104. Par mi es un problema el que la mayor parte de los creyentes en mi país tengan tan alto nivel de vida.",
+        "105. Me molesta cuando veo que el edificio, los equipos, la ropa, etc. Están estropeados o en mal estado.",
+        "106. También estoy contento de hacer los trabajos que a otros no les resultan atractivos.",
+        "107. También me alegro de recibir visitas sin anuncio previo, aunque mi vivienda / mi habitación no esté ordenada",
+        "108. Tomo muy en serio los motivos de oración que se me comunican y los incluyo regularmente en mis oraciones.",
+        "109. Cuando alguien ora en lenguas, pido a Dios que puedan interpretarlo.",
+        "110. Me agrada ocuparme del estudio de temas bíblicos y de su aplicación en la vida diaria.",
+        "111. Considero importante que un grupo de cristianos sea dirigido por una persona capacitada.",
+        "112. Me fascinan los relatos de mártires cristianos.",
+        "113. Cuando veo cualquier caso de necesidad, mi deseo es siempre ayudar de inmediato.",
+        "114. Oro para que, también en nuestros días, Dios obre por mi medio señales y milagros como en los tiempos de la iglesia primitiva.",
+        "115. Yo doy mucho más importancia que otros creyentes a conseguir la unidad entre iglesias diferentes.",
+        "116. Me aflige muchísimo que se deje a muchos cristianos con escasa asistencia personal y espiritual.",
+        "117. Oro para que Dios me hable de una manera mucho más directa que lo que es actualmente",
+        "118. Me doy cuenta cuando otros necesitan ayuda práctica y estoy dispuesto a dársela.",
+        "119. Me pone triste cuando, en la iglesia, se da poca importancia la calidad de la música.",
+        "120. Es mi deseo especial que los creyentes arreglen su ambiente con estética.",
+        "121. Desarrollar, de manera independiente, proyectos de trabajo y organización.",
+        "122. Relacionarme con personas con un estilo de vida totalmente diferente al mío.",
+        "123. Renunciar a fundar una familia (los casados pondrán la X en la columna de la derecha)",
+        "124. Distinguir si las palabras de otra persona tienen su origen en Dios, en el ser humano o en Satanás.",
+        "125. Descubrir el momento oportuno cuando una persona está sinceramente dispuesta al evangelio.",
+        "126. Después de breve tiempo de conversar con personas desconocidas, llegar a tocar temas profundos.",
+        "127. Orar y trabajar por objetivos que otros cristianos tildarían de imposibles.",
+        "128. Dar con regularidad una buena parte de mi dinero para la obra en el Reino de Dios.",
+        "129. Detectar si hay campos en la vida de las personas, que se encuentran bajo influencia demoníaca.",
+        "130. Orar personalmente, y de manera muy concreta, por la curación de enfermos.",
+        "131. Transmitir temas e informaciones bíblicos de manera lógica, interesante y comprensible para los que escuchan.",
+        "132. Transmitir a otros cristianos un mensaje de Dios (o una oración), expresándolo en lenguas.",
+        "133. Aplicar conocimientos teóricos a situaciones concretas.",
+        "134. Vivir a un nivel materialmente modesto.",
+        "135. Resolver por mi mismo problemas técnicos para los cuales, normalmente, se requeriría un operario especializado.",
+        "136. Aliviar de trabajo a otros cristiano, para que puedan dar mejor servicio.",
+        "137. Hacer que, en mi hogar, personas desconocidas se sientan como en su propia casa.",
+        "138. Orar intensamente por una necesidad determinada, durante semanas y meses.",
+        "139. Descubrir lo que Dios nos quiere decir, cuando oigo un mensaje en lenguas.",
+        "140. Descubrir, formular y sistematizar hechos que puedan ser importantes para la salud de la iglesia.",
+        "141. Delegar tareas y responsabilidades a otros.",
+        "142. Soportar sufrimientos por amor a Cristo.",
+        "143. Expresar mi simpatía y compasión a personas que sufren.",
+        "144. Orar por señales y milagros sobrenaturales.",
+        "145. Aconsejar y exhortar a grupos e iglesias, respecto a su situación espiritual.",
+        "146. Asesorar y brindar compañía personal a un grupo de creyentes, y trabajar por su unidad.",
+        "147. Detectar las manifestaciones de Dios, en cuando a Su voluntad en una situación determinada.",
+        "148. Tomar a mi cargo tareas en la iglesia, que otros consideran poco atractivas.",
+        "149. Aprender a tocar otro instrumento musical.",
+        "150. Aplicar formas creativas de comunicación, como por Ej. Pintura, teatro, escena muda, etc.",
+        "151. Tomar parte en cursos de formación, para ayudarme a mejorar mi capacidad para planificar, organizar y delegar.",
+        "152. Trabajar en un ambiente cultural extraño, de darse la oportunidad.",
+        "153. Quedarme soltero, para así trabajar mejor en el Reino de Dios (los casados pondrán una X en la columna de la derecha)",
+        "154. Ocupar mucho tiempo advirtiendo de posibles peligros a otras personas.",
+        "155. Tomar parte en un curso destinado a brindar ayuda sobre cómo llevar a personas a la fe en Cristo.",
+        "156. Ocuparme intensamente de aprender cómo ayudar a otros mediante conversaciones regulares.",
+        "157. Aceptar y emprender una tarea, aunque sea de gran riesgo.",
+        "158. Brindar regularmente apoyo financiero a cristianos cuya obra sea digna de apoyar.",
+        "159. Emprender la lucha contra los poderes demoníacos.",
+        "160. Cooperar en un servicio de oración por los enfermos.",
+        "161. Leer más literatura acerca de la comunicación, para mejorar mi capacidad de enseñar a otros.",
+        "162. Hablar públicamente en lenguas, si Dios me da ese don.",
+        "163. Ocuparme durante mucho tiempo de aconsejar y asesorar a otras personas o grupos frente a decisiones importantes.",
+        "164. Desistir, si es necesario, de buena comida, de un hogar cómodo y de ropa costosa.",
+        "165. De ser necesario, ayudar en reparaciones y otros trabajos de mantenimiento en la Iglesia.",
+        "166. Aliviar de trabajo a cristianos sobrecargados, apoyándolos con mi cooperación.",
+        "167. Más que en el pasado, compartir mi hogar con personas desconocidas.",
+        "168. Colaborar en un grupo de la iglesia, que se ocupe de orar intensa y continuadamente por otras personas.",
+        "169. Interpretar públicamente lo que otros cristianos hablan en lenguas, al darme Dios una interpretación.",
+        "170. Pasarme mucho tiempo recopilando ideas que ayuden a la iglesia de Jesucristo mantenerse sana y en crecimiento.",
+        "171. Tom la responsabilidad de dirigir a gran número de cristianos",
+        "172. Arriesgar mi vida, si fuera necesario para el Reino de Dios.",
+        "173. Cooperar en un servicio de la iglesia, que se dedique especialmente a los desheredados de la sociedad.",
+        "174. Concentrarme en la oración por aquellos que, a la vista humana, tengan menos esperanza.",
+        "175. Actuar como mediador, al existir conflictos entre diferentes iglesias.",
+        "176. Tomar la responsabilidad de ocuparme de un grupo de creyentes.",
+        "177. Transmitir mensajes de Dios a miembros de la iglesia, aunque sean incómodos.",
+        "178. Ocupar mi tiempo en asuntos y tareas de la iglesia, que son, precisamente, de máxima urgencia.",
+        "179. Tomar parte en una acto musical de la iglesia.",
+        "180. Formar parte de un grupo de la iglesia, donde se promuevan las cualidades artísticas."
+      ];
+
+      const preguntasMayusculas = [
+        "A. Le agradaría ocuparse de resolver asuntos relacionados con detalles de organización.",
+        "B. Le haría feliz pasar la mayor parte de su vida en una cultura que le es extraña.",
+        "C. Tendría menos dificultades que otros de quedarse soltero(a).",
+        "D. Tenga mayor facilidad que otros para descubrir los motivos exactos que se esconden detrás de una actitud determinada.",
+        "E. Tenga como especial vocación, hablar precisamente con no creyentes sobre la fe de Jesucristo.",
+        "F. Se les acerquen personas con las cuales no está muy relacionado(da), con el propósito de recibir asistencia pastoral.",
+        "G. Estaría gustosamente dispuesto a correr riesgos personales considerables para alcanzar sus objetivos.",
+        "H. Le sea más importante apoyar económicamente proyectos cristianos que a la mayoría de los creyentes consagrados.",
+        "I. Pueda diferenciar mejor que otros cristianos, si algo tiene origen humanos, satánico o divino.",
+        "J. Se le dirijan más personas que lo que es normal, para pedirle que ore por su curación.",
+        "K. Experimente gran gozo en enseñar a otos creyentes.",
+        "L. Posea el don de lenguas.",
+        "M. Tenga mayor facilidad que otros, de resolver problemas difíciles de otras personas.",
+        "N. Sea más feliz con pocos que con muchos bienes materiales",
+        "O. Tenga más habilidad manual que la mayoría de las personas.",
+        "P. Le produzca alegría aliviar a otros cristianos, haciéndose cargo de trabajos laboriosos.",
+        "Q. Sea más feliz con huéspedes que sin ellos.",
+        "R. Experimente un gozo mucho mayor que la mayoría de los creyentes consagrados, al pasar largo tiempo en oración.",
+        "S. Esté en condiciones de interpretar lo que otros cristianos hablan en lenguas.",
+        "T. Le produzca especial placer retirarse durante largo tiempo, para trabajar en el desarrollo de ideas nuevas.",
+        "U. Sea su especial llamamiento el indicar a otros cómo proceder.",
+        "V. Le resulte más fácil soportar sufrimiento, que a la mayoría de los cristianos.",
+        "W. Su especial vocación sea ocuparse de los que sufren necesidad, ayudándoles de manera práctica.",
+        "X. Dios lo utilice frecuentemente para obrar, por su intermedio, señales, y maravillas sobrenaturales.",
+        "Y. Se le pida su opinión y consejo, cuando se trate de nombrar a nuevos responsables en la iglesia.",
+        "Z. Tenga un gozo especial en ocuparse personalmente de un grupo de creyentes, durante largo tiempo.",
+        "AA. Sea usado (a) más que otros creyentes en recibir mensajes divinos y transmitirlos a la iglesia.",
+        "BB. Le resulte más fácil que a otros, tomar a su cargo los trabajos de la iglesia que, precisamente, están por hacer.",
+        "CC. Tenga la especial vocación de servir al Señor por medio dela música.",
+        "DD. Le agraden mucho las actividades artísticas (por ej. Pintar, escribir, hacer teatro, etc.)"
+      ];
+
+      const preguntasMinusculas = [
+        "a. Le agradaría ocuparse de resolver asuntos relacionados con detalles de organización.",
+        "b. Le haría feliz pasar la mayor parte de su vida en una cultura que le es extraña.",
+        "c. Tendría menos dificultades que otros de quedarse soltero(a).",
+        "d. Tenga mayor facilidad que otros para descubrir los motivos exactos que se esconden detrás de una actitud determinada.",
+        "e. Tenga como especial vocación, hablar precisamente con no creyentes sobre la fe de Jesucristo.",
+        "f. Se les acerquen personas con las cuales no está muy relacionado(da), con el propósito de recibir asistencia pastoral.",
+        "g. Estaría gustosamente dispuesto a correr riesgos personales considerables para alcanzar sus objetivos.",
+        "h. Le sea más importante apoyar económicamente proyectos cristianos que a la mayoría de los creyentes consagrados.",
+        "i. Pueda diferenciar mejor que otros cristianos, si algo tiene origen humanos, satánico o divino.",
+        "j. Se le dirijan más personas que lo que es normal, para pedirle que ore por su curación.",
+        "k. Experimente gran gozo en enseñar a otos creyentes.",
+        "l. Posea el don de lenguas.",
+        "m. Tenga mayor facilidad que otros, de resolver problemas difíciles de otras personas.",
+        "n. Sea más feliz con pocos que con muchos bienes materiales",
+        "o. Tenga más habilidad manual que la mayoría de las personas.",
+        "p. Le produzca alegría aliviar a otros cristianos, haciéndose cargo de trabajos laboriosos.",
+        "q. Sea más feliz con huéspedes que sin ellos.",
+        "r. Experimente un gozo mucho mayor que la mayoría de los creyentes consagrados, al pasar largo tiempo en oración.",
+        "s. Esté en condiciones de interpretar lo que otros cristianos hablan en lenguas.",
+        "t. Le produzca especial placer retirarse durante largo tiempo, para trabajar en el desarrollo de ideas nuevas.",
+        "u. Sea su especial llamamiento el indicar a otros cómo proceder.",
+        "v. Le resulte más fácil soportar sufrimiento, que a la mayoría de los cristianos.",
+        "w. Su especial vocación sea ocuparse de los que sufren necesidad, ayudándoles de manera práctica.",
+        "x. Dios lo utilice frecuentemente para obrar, por su intermedio, señales, y maravillas sobrenaturales.",
+        "y. Se le pida su opinión y consejo, cuando se trate de nombrar a nuevos responsables en la iglesia.",
+        "z. Tenga un gozo especial en ocuparse personalmente de un grupo de creyentes, durante largo tiempo.",
+        "aa. Sea usado (a) más que otros creyentes en recibir mensajes divinos y transmitirlos a la iglesia.",
+        "bb. Le resulte más fácil que a otros, tomar a su cargo los trabajos de la iglesia que, precisamente, están por hacer.",
+        "cc. Tenga la especial vocación de servir al Señor por medio dela música.",
+        "dd. Le agraden mucho las actividades artísticas (por ej. Pintar, escribir, hacer teatro, etc.)"
+      ];
+
+      const opcionesPorBloque = {
+        0: [{texto:"Muchísima",valor:11},{texto:"Mucha",valor:9},{texto:"Cierta",valor:4},{texto:"Poca",valor:2},{texto:"Ninguna",valor:0}],
+        1: [{texto:"Muchísimo",valor:8},{texto:"Mucho",valor:6},{texto:"Bastante",valor:4},{texto:"Apenas",valor:2},{texto:"En absoluto",valor:0}],
+        2: [{texto:"Muchísimas veces",valor:13},{texto:"Muchas veces",valor:10},{texto:"Algunas veces",valor:5},{texto:"Pocas veces",valor:2},{texto:"Nunca",valor:0}],
+        3: [{texto:"Muchísimo",valor:5},{texto:"Mucho",valor:4},{texto:"Bastante",valor:2},{texto:"Muy poco",valor:1},{texto:"En absoluto",valor:0}],
+        4: [{texto:"Muy fácil",valor:5},{texto:"Fácil",valor:4},{texto:"Ni fácil ni difícil",valor:2},{texto:"Algo difícil",valor:1},{texto:"Muy difícil",valor:0}],
+        5: [{texto:"Con muchísimo gusto",valor:7},{texto:"Con gusto",valor:5},{texto:"En casos dados",valor:2},{texto:"Sólo en una emergencia",valor:1},{texto:"Por ningún motivo",valor:0}],
+        6: [{texto:"Muy bien",valor:5},{texto:"Bien",valor:4},{texto:"En un caso dado",valor:2},{texto:"Apenas",valor:1},{texto:"En ningún caso",valor:0}],
+        7: [{texto:"Muy bien",valor:5},{texto:"Bien",valor:4},{texto:"En un caso dado",valor:2},{texto:"Apenas",valor:1},{texto:"En ningún caso",valor:0}]
+      };
+
+      const textosEncabezado = {
+        0: { titulo: "Me produce Alegría...", sub: "* Si en algunos de los campos que siguen no ha tenido ninguna experiencia, marque con una cruz la columna de la derecha." },
+        1: { titulo: "Desearía... (más que hasta ahora)", sub: "* Si en algunos de los campos que siguen no ha tenido ninguna experiencia, marque con una cruz la columna de la derecha." },
+        2: { titulo: "He tenido... la experiencia", sub: "* Si en algunos de los campos que siguen no ha tenido ninguna experiencia, marque con una cruz la columna de la derecha." },
+        3: { titulo: "La siguiente declaración... me caracteriza", sub: "* Si en algunos de los campos que siguen no ha tenido ninguna experiencia, marque con una cruz la columna de la derecha." },
+        4: { titulo: "Me resulta...*", sub: "* Si en algunos de los campos que siguen no ha tenido ninguna experiencia, marque con una cruz la columna de la derecha." },
+        5: { titulo: "Yo estaría...* dispuesto a...", sub: "* Si en algunos de los campos que siguen no ha tenido ninguna experiencia, marque con una cruz la columna de la derecha." },
+        6: { titulo: "Me podría figurar... que a tal persona...", sub: "Evaluación de Mayúsculas (A - DD)" },
+        7: { titulo: "Me podría figurar... que a tal persona...", sub: "Evaluación de Minúsculas (a - dd)" }
+      };
+
+      const form = document.getElementById('loginForm');
+      const mensaje = document.getElementById('mensaje');
+      const btnEntrar = document.getElementById('btnEntrar');
+      const cedulaInput = document.getElementById('cedula');
+      const toggleCedula = document.getElementById('toggleCedula');
+
+      toggleCedula.addEventListener('click', () => {
+        const oculto = cedulaInput.type === 'password';
+        cedulaInput.type = oculto ? 'text' : 'password';
+        toggleCedula.textContent = oculto ? 'Ocultar' : 'Mostrar';
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const usuario = document.getElementById('usuario').value.trim();
+        const cedula = cedulaInput.value.trim();
+
+        if (!usuario || !cedula) {
+          mensaje.textContent = 'Llena ambos campos.';
+          mensaje.className = 'error';
+          return;
+        }
+
+        let ipCliente = localStorage.getItem('dispositivo_ip_token');
+        if (!ipCliente) {
+          ipCliente = 'IP_' + Math.random().toString(36).substring(2, 15) + "_" + Date.now();
+          localStorage.setItem('dispositivo_ip_token', ipCliente);
+        }
+
+        btnEntrar.disabled = true;
+        mensaje.textContent = 'Verificando credenciales y restricciones de red...';
+        mensaje.className = 'info';
+
+        // PETICIÓN FETCH HACIA LA API DE GOOGLE APPS SCRIPT
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "validarLogin",
+            usuario: usuario,
+            cedula: cedula,
+            ipCliente: ipCliente
+          })
+        })
+        .then(res => res.json())
+        .then(res => {
+          if (res.exito) {
+            usuarioActual = usuario;
+            tipoTest = res.tipo; 
+            
+            if (tipoTest === 'principal') {
+              respuestasUsuario = new Array(180).fill(null);
+            } else {
+              respuestasUsuario = new Array(30).fill(null);
+            }
+
+            mensaje.textContent = '¡Acceso concedido!';
+            mensaje.className = 'exito';
+
+            setTimeout(() => {
+              document.getElementById('loginCard').style.display = 'none';
+              document.getElementById('vistaTest').style.display = 'block';
+              document.getElementById('infoUsuario').innerText = "Usuario: " + usuarioActual + " | Módulo: " + tipoTest.toUpperCase();
+              renderizarPagina();
+            }, 800);
+          } else {
+            btnEntrar.disabled = false;
+            mensaje.textContent = res.mensaje;
+            mensaje.className = 'error';
+          }
+        })
+        .catch(() => {
+          btnEntrar.disabled = false;
+          mensaje.textContent = 'Error de conexión con el servidor.';
+          mensaje.className = 'error';
+        });
+      });
+
+      function renderizarPagina() {
+        const contenedor = document.getElementById('contenedorPreguntas');
+        contenedor.innerHTML = "";
+        
+        let preguntasActuales = [];
+        let indexBloque = 0;
+
+        if (tipoTest === 'principal') {
+          indexBloque = paginaActual; 
+          preguntasActuales = preguntasPrincipal.slice(paginaActual * 30, (paginaActual + 1) * 30);
+          document.getElementById('tituloBloque').innerText = "Autoevaluación - Parte " + (paginaActual + 1) + " de 6";
+        } else if (tipoTest === 'mayusculas') {
+          indexBloque = 6;
+          preguntasActuales = preguntasMayusculas;
+          document.getElementById('tituloBloque').innerText = "Evaluación de Opinión - Mayúsculas (A-DD)";
+        } else {
+          indexBloque = 7;
+          preguntasActuales = preguntasMinusculas;
+          document.getElementById('tituloBloque').innerText = "Evaluación de Opinión - Minúsculas (a-dd)";
+        }
+
+        document.getElementById('tituloSeccion').innerText = textosEncabezado[indexBloque].titulo;
+        document.getElementById('subtituloSeccion').innerText = textosEncabezado[indexBloque].sub;
+
+        let opcionesActuales = opcionesPorBloque[indexBloque];
+
+        preguntasActuales.forEach((preguntaTexto, idx) => {
+          let globalIdx = (tipoTest === 'principal') ? (paginaActual * 30 + idx) : idx;
+          let div = document.createElement('div');
+          div.className = "pregunta-item";
+
+          let htmlOpciones = "";
+          opcionesActuales.forEach(op => {
+            let checked = (respuestasUsuario[globalIdx] === op.valor) ? "checked" : "";
+            htmlOpciones += `
+              <label>
+                <input type="radio" name="p_${globalIdx}" value="${op.valor}" ${checked} onclick="guardarRespuesta(${globalIdx}, ${op.valor})">
+                ${op.texto} (${op.valor})
+              </label>
+            `;
+          });
+
+          div.innerHTML = `
+            <div class="pregunta-texto">${preguntaTexto}</div>
+            <div class="opciones-grid">${htmlOpciones}</div>
+          `;
+          contenedor.appendChild(div);
+        });
+
+        if (tipoTest === 'principal') {
+          document.getElementById('btnAnterior').style.display = (paginaActual > 0) ? "block" : "none";
+          document.getElementById('btnSiguiente').innerText = (paginaActual === 5) ? "Guardar" : "Siguiente";
+        } else {
+          document.getElementById('btnAnterior').style.display = "none";
+          document.getElementById('btnSiguiente').innerText = "Guardar";
+        }
+        contenedor.scrollTop = 0;
+      }
+
+      function guardarRespuesta(indice, valor) {
+        respuestasUsuario[indice] = valor;
+        document.getElementById('mensajeErrorTest').innerText = "";
+      }
+
+      function cambiarPagina(direccion) {
+        let maxPreguntas = (tipoTest === 'principal') ? 30 : respuestasUsuario.length;
+        let inicio = (tipoTest === 'principal') ? (paginaActual * 30) : 0;
+        let fin = inicio + maxPreguntas;
+
+        if (direccion === 1) {
+          for (let i = inicio; i < fin; i++) {
+            if (respuestasUsuario[i] === null) {
+              document.getElementById('mensajeErrorTest').innerText = "Responde todas las preguntas antes de continuar.";
+              return;
+            }
+          }
+        }
+
+        if (tipoTest === 'principal') {
+          paginaActual += direccion;
+          if (paginaActual > 5) {
+            enviarBloqueCompleto();
+          } else {
+            renderizarPagina();
+          }
+        } else {
+          enviarBloqueCompleto();
+        }
+      }
+
+      function enviarBloqueCompleto() {
+        let btnSig = document.getElementById('btnSiguiente');
+        btnSig.disabled = true;
+        btnSig.innerText = "Guardando...";
+
+        // PETICIÓN FETCH PARA GUARDAR RESPUESTAS EN LA API
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "guardarRespuestasBloque",
+            usuario: usuarioActual,
+            tipoTest: tipoTest,
+            respuestas: respuestasUsuario
+          })
+        })
+        .then(res => res.json())
+        .then(res => {
+          if (res.exito) {
+            document.querySelector('.seccion-preguntas').style.display = 'none';
+            document.getElementById('botonesNavegacion').style.display = 'none';
+            document.querySelector('.encabezado-instrucciones').style.display = 'none';
+            document.getElementById('tituloBloque').style.display = 'none';
+            document.getElementById('panelFinal').style.display = 'block';
+          } else {
+            btnSig.disabled = false;
+            btnSig.innerText = "Guardar";
+            document.getElementById('mensajeErrorTest').innerText = res.mensaje;
+          }
+        })
+        .catch(() => {
+          btnSig.disabled = false;
+          btnSig.innerText = "Guardar";
+          document.getElementById('mensajeErrorTest').innerText = "Error de red al guardar.";
+        });
+      }
+
+      function editarRespuestas() {
+        document.querySelector('.seccion-preguntas').style.display = 'block';
+        document.getElementById('botonesNavegacion').style.display = 'flex';
+        document.querySelector('.encabezado-instrucciones').style.display = 'block';
+        document.getElementById('tituloBloque').style.display = 'block';
+        document.getElementById('panelFinal').style.display = 'none';
+        document.getElementById('btnSiguiente').disabled = false;
+        if (tipoTest === 'principal') paginaActual = 5;
+        renderizarPagina();
+      }
+
+      function borrarRespuestas() {
+        if (confirm("¿Estás seguro de borrar tus respuestas?")) {
+          respuestasUsuario = new Array(respuestasUsuario.length).fill(null);
+          paginaActual = 0;
+          document.querySelector('.seccion-preguntas').style.display = 'block';
+          document.getElementById('botonesNavegacion').style.display = 'flex';
+          document.querySelector('.encabezado-instrucciones').style.display = 'block';
+          document.getElementById('tituloBloque').style.display = 'block';
+          document.getElementById('panelFinal').style.display = 'none';
+          document.getElementById('btnSiguiente').disabled = false;
+          renderizarPagina();
+        }
+      }
+
+      function finalizarListo() {
+        alert("Test finalizado y guardado con éxito.");
+        location.reload();
+      }
+    </script>
+  </body>
+</html>
