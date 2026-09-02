@@ -606,17 +606,14 @@
 
     <script>
       // URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT
-      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzt4B4vbMXyFu3GNyLnR-scqtjOXwWTiv8SIOQ3R3ovg3GME7nKZfem-9LHKdTZGXifIw/exec";
+      const WEB_APP_URL = "PEGA_AQUÍ_TU_URL_DE_APLICACIÓN_WEB";
 
       // ---------- Modo claro/oscuro ----------
-      // Guardamos la preferencia en localStorage cuando está disponible (por ejemplo,
-      // al publicarse como Web App real). Si el entorno lo bloquea, funciona igual
-      // durante la sesión, solo que no recuerda la elección al recargar.
       function leerPreferenciaGuardada() {
         try { return localStorage.getItem('temaPreferido'); } catch (e) { return null; }
       }
       function guardarPreferencia(valor) {
-        try { localStorage.setItem('temaPreferido', valor); } catch (e) { /* sin soporte, no pasa nada */ }
+        try { localStorage.setItem('temaPreferido', valor); } catch (e) { }
       }
 
       function aplicarTema(tema) {
@@ -650,7 +647,6 @@
       let respuestasUsuario = [];
       let testEnProgreso = false;
 
-      // Evita que alguien pierda respuestas sin querer (recarga, cerrar pestaña, botón atrás).
       window.addEventListener('beforeunload', function (e) {
         if (testEnProgreso) {
           e.preventDefault();
@@ -986,6 +982,11 @@
                 respuestasUsuario = new Array(30).fill(null);
               }
 
+              // Restaurar progreso previo si ya había avanzado antes en esta misma red
+              if (res.respuestasGuardadas && Array.isArray(res.respuestasGuardadas)) {
+                respuestasUsuario = res.respuestasGuardadas;
+              }
+
               mensaje.textContent = '¡Acceso concedido!';
               mensaje.className = 'exito';
 
@@ -993,6 +994,17 @@
                 document.getElementById('loginCard').style.display = 'none';
                 document.getElementById('vistaTest').style.display = 'block';
                 document.getElementById('infoUsuario').innerText = "Usuario: " + usuarioActual + " | Módulo: " + tipoTest.toUpperCase();
+                
+                // Ubicar al usuario en la página donde iba
+                if (tipoTest === 'principal') {
+                  const primerNull = respuestasUsuario.findIndex(v => v === null);
+                  if (primerNull !== -1) {
+                    paginaActual = Math.floor(primerNull / 30);
+                  } else {
+                    paginaActual = 5;
+                  }
+                }
+
                 renderizarPagina();
                 testEnProgreso = true;
               }, 800);
@@ -1077,8 +1089,6 @@
         contenedor.scrollTop = 0;
         actualizarProgreso();
 
-        // Movemos el foco al título del bloque para orientar a quienes navegan
-        // con lector de pantalla o teclado al cambiar de página.
         const titulo = document.getElementById('tituloBloque');
         if (titulo) titulo.focus({ preventScroll: true });
       }
@@ -1125,6 +1135,18 @@
           }
         }
 
+        // GUARDAR PROGRESO PARCIAL EN SEGUNDO PLANO
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "guardarProgresoParcial",
+            usuario: usuarioActual,
+            tipoTest: tipoTest,
+            respuestasParciales: respuestasUsuario
+          })
+        }).catch(err => console.log("Guardado parcial en segundo plano"));
+
         if (tipoTest === 'principal') {
           paginaActual += direccion;
           if (paginaActual > 5) {
@@ -1147,8 +1169,6 @@
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           el.classList.remove('resaltada');
-          // Forzamos un reflow para poder re-disparar la animación si el usuario
-          // vuelve a intentar avanzar sin responder esa misma pregunta.
           void el.offsetWidth;
           el.classList.add('resaltada');
           setTimeout(() => el.classList.remove('resaltada'), 1700);
@@ -1211,7 +1231,6 @@
         renderizarPagina();
       }
 
-      // Funciones de editar y borrar
       function borrarRespuestas() {
         if (confirm("¿Estás seguro de borrar tus respuestas?")) {
           respuestasUsuario = new Array(respuestasUsuario.length).fill(null);
