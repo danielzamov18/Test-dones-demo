@@ -490,7 +490,7 @@
 
     <script>
       // URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT
-      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzb3aQaS94KlNnJqqGaijvYF45yDXBddnYwP0Ho4t8u5snMjz9P3H03QffChdJLkZsH/exec";
+      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzeseYAy-s7niVFR73Fi6Oy2lNtfn0hi_kVrKEhlSVMXlK3IjNh6bXS1TRriaj0HZH3jg/exec";
 
       function leerPreferenciaGuardada() {
         try { return localStorage.getItem('temaPreferido'); } catch (e) { return null; }
@@ -690,7 +690,7 @@
         "150. Aplicar formas creativas de comunicación, como por Ej. Pintura, teatro, escena muda, etc.",
         "151. Tomar parte en cursos de formación, para ayudarme a mejorar mi capacidad para planificar, organizar y delegar.",
         "152. Trabajar en un ambiente cultural extraño, de darse la oportunidad.",
-        "153. Quedarme soltero, para así trabajar mejor en el Reino de Dios (los casados pondrán una X en la columna de la derecha)",
+        "153. Quedarme soltero, para así trabalhar mejor en el Reino de Dios (los casados pondrán una X en la columna de la derecha)",
         "154. Ocupar mucho tiempo advirtiendo de posibles peligros a otras personas.",
         "155. Tomar parte en un curso destinado a brindar ayuda sobre cómo llevar a personas a la fe en Cristo.",
         "156. Ocuparme intensamente de aprender cómo ayudar a otros mediante conversaciones regulares.",
@@ -835,68 +835,66 @@
         mensaje.textContent = 'Verificando datos y cargando progreso...';
         mensaje.className = 'info';
 
-        fetch('https://api.ipify.org?format=json')
-          .then(response => response.json())
-          .then(dataIP => {
-            const ipRealCliente = dataIP.ip;
-            return fetch(WEB_APP_URL, {
-              method: "POST",
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
-              body: JSON.stringify({
-                action: "validarLogin",
-                usuario: usuario,
-                cedula: cedula,
-                ipCliente: ipRealCliente
-              })
-            });
+        // Firma única del dispositivo actual (navegador + pantalla)
+        const dispositivoFirma = navigator.userAgent + "_" + screen.width + "x" + screen.height;
+
+        fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "validarLogin",
+            usuario: usuario,
+            cedula: cedula,
+            ipCliente: dispositivoFirma
           })
-          .then(res => res.json())
-          .then(res => {
-            if (res.exito) {
-              usuarioActual = usuario;
-              tipoTest = res.tipo; 
+        })
+        .then(res => res.json())
+        .then(res => {
+          if (res.exito) {
+            usuarioActual = usuario;
+            tipoTest = res.tipo; 
+            
+            if (tipoTest === 'principal') {
+              respuestasUsuario = new Array(180).fill(null);
+            } else {
+              respuestasUsuario = new Array(30).fill(null);
+            }
+
+            if (res.respuestasGuardadas && Array.isArray(res.respuestasGuardadas)) {
+              respuestasUsuario = res.respuestasGuardadas;
+            }
+
+            mensaje.textContent = '¡Acceso concedido!';
+            mensaje.className = 'exito';
+
+            setTimeout(() => {
+              document.getElementById('loginCard').style.display = 'none';
+              document.getElementById('vistaTest').style.display = 'block';
+              document.getElementById('infoUsuario').innerText = "Usuario: " + usuarioActual + " | Módulo: " + tipoTest.toUpperCase();
               
               if (tipoTest === 'principal') {
-                respuestasUsuario = new Array(180).fill(null);
-              } else {
-                respuestasUsuario = new Array(30).fill(null);
-              }
-
-              if (res.respuestasGuardadas && Array.isArray(res.respuestasGuardadas)) {
-                respuestasUsuario = res.respuestasGuardadas;
-              }
-
-              mensaje.textContent = '¡Acceso concedido!';
-              mensaje.className = 'exito';
-
-              setTimeout(() => {
-                document.getElementById('loginCard').style.display = 'none';
-                document.getElementById('vistaTest').style.display = 'block';
-                document.getElementById('infoUsuario').innerText = "Usuario: " + usuarioActual + " | Módulo: " + tipoTest.toUpperCase();
-                
-                if (tipoTest === 'principal') {
-                  const primerNull = respuestasUsuario.findIndex(v => v === null);
-                  if (primerNull !== -1) {
-                    paginaActual = Math.floor(primerNull / 30);
-                  } else {
-                    paginaActual = 5;
-                  }
+                const primerNull = respuestasUsuario.findIndex(v => v === null);
+                if (primerNull !== -1) {
+                  paginaActual = Math.floor(primerNull / 30);
+                } else {
+                  paginaActual = 5;
                 }
+              }
 
-                renderizarPagina();
-                testEnProgreso = true;
-              }, 800);
-            } else {
-              btnEntrar.disabled = false;
-              mensaje.textContent = res.mensaje;
-              mensaje.className = 'error';
-            }
-          })
-          .catch(() => {
+              renderizarPagina();
+              testEnProgreso = true;
+            }, 800);
+          } else {
             btnEntrar.disabled = false;
-            mensaje.textContent = 'Error de conexión con el servidor.';
+            mensaje.textContent = res.mensaje;
             mensaje.className = 'error';
-          });
+          }
+        })
+        .catch(() => {
+          btnEntrar.disabled = false;
+          mensaje.textContent = 'Error de conexión con el servidor.';
+          mensaje.className = 'error';
+        });
       });
 
       function extraerEtiquetaPregunta(texto) {
